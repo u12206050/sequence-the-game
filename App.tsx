@@ -137,6 +137,7 @@ const App: React.FC = () => {
 
     if (turnPhase === 'FIRST_FLIP') {
       if (brick.isFlipped) return;
+      setActiveScoringItem(null);
       const newBricks = [...bricks];
       newBricks[idx] = { ...newBricks[idx], isFlipped: true };
       setBricks(newBricks);
