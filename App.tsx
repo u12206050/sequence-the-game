@@ -313,7 +313,7 @@ const App: React.FC = () => {
         <ScoreOverlay activeItem={activeScoringItem} totalAccumulated={accumulatedTurnPoints} isSkipped={skipRef.current} />
       </div>
 
-      <div className="relative w-full p-2 md:px-8 overflow-x-auto no-scrollbar">
+      <div className="relative w-full pt-4 pb-8 px-2 md:px-8 overflow-x-auto no-scrollbar">
         <div className="brick-grid mx-auto" style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
           {bricks.map((brick, idx) => {
             if (brick.isGap) return <div key={brick.id} className="w-full aspect-square bg-slate-900/10 rounded-xl" />;
