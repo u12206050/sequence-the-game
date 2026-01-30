@@ -278,40 +278,42 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen p-4 md:p-8 flex flex-col items-center max-w-7xl mx-auto select-none"
+      className="min-h-screen flex flex-col items-center max-w-7xl mx-auto select-none"
       onClick={handleScreenClick}
     >
-      <div className="w-full flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-slate-800/40 p-2 rounded-3xl border border-slate-700/50 backdrop-blur-xl shadow-2xl">
-        <div className="flex items-center gap-4 px-4">
-          <div className="bg-indigo-600 p-3 rounded-2xl shadow-xl shadow-indigo-500/20">
-            <GitCompareArrows className="text-white" size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent leading-none">Sequence</h1>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">by Gerard Lamusse</p>
-            <div className="flex items-center gap-3">
-              <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">
-                {isTieBreaker ? 'Tie Breaker Round!' : `Round ${round} of 3`} • {gameMode} MODE
-              </p>
-              <div className="flex gap-2">
-                <button onClick={(e) => { e.stopPropagation(); setIsHelpOpen(true); }} className="p-1 text-slate-500 hover:text-indigo-400 transition-colors"><HelpCircle size={16} /></button>
-                <button onClick={(e) => { e.stopPropagation(); setIsConfirmOpen(true); }} className="p-1 text-slate-500 hover:text-rose-400 transition-colors"><RotateCcw size={16} /></button>
+      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-b border-slate-700/50 shadow-xl">
+        <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-4 p-2 md:p-4">
+          <div className="flex items-center gap-2 md:gap-4 px-2 md:px-4">
+            <div className="bg-indigo-600 p-2 md:p-3 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-500/20">
+              <GitCompareArrows className="text-white" size={24} />
+            </div>
+            <div>
+              <h1 className="text-xl md:text-3xl font-black bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent leading-none">Sequence</h1>
+              <p className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-wider">by Gerard Lamusse</p>
+              <div className="flex items-center gap-2 md:gap-3">
+                <p className="text-slate-400 font-bold uppercase text-[8px] md:text-[10px] tracking-[0.15em] md:tracking-[0.2em]">
+                  {isTieBreaker ? 'Tie Breaker!' : `Round ${round}/3`} • {gameMode}
+                </p>
+                <div className="flex gap-1 md:gap-2">
+                  <button onClick={(e) => { e.stopPropagation(); setIsHelpOpen(true); }} className="p-0.5 md:p-1 text-slate-500 hover:text-indigo-400 transition-colors"><HelpCircle size={14} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setIsConfirmOpen(true); }} className="p-0.5 md:p-1 text-slate-500 hover:text-rose-400 transition-colors"><RotateCcw size={14} /></button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="flex gap-4 overflow-x-auto max-w-full p-4 no-scrollbar">
-          {players.map((p, i) => (
-            <PlayerStats key={p.id} player={p} isActive={i === currentPlayerIdx} isCurrentTurn={i === currentPlayerIdx && !isAnimating} />
-          ))}
+          <div className="flex gap-2 md:gap-4 overflow-x-auto max-w-full px-2 md:px-4 pb-1 no-scrollbar">
+            {players.map((p, i) => (
+              <PlayerStats key={p.id} player={p} isActive={i === currentPlayerIdx} isCurrentTurn={i === currentPlayerIdx && !isAnimating} />
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="h-32 w-full flex items-center justify-center relative mb-6">
+      <div className="fixed top-[100px] md:top-[120px] left-0 right-0 h-16 md:h-24 flex items-center justify-center z-40 pointer-events-none">
         <ScoreOverlay activeItem={activeScoringItem} totalAccumulated={accumulatedTurnPoints} isSkipped={skipRef.current} />
       </div>
 
-      <div className="relative w-full overflow-x-auto p-8 pb-12 no-scrollbar">
+      <div className="relative w-full mt-[140px] md:mt-[160px] mb-[120px] md:mb-[100px] px-2 md:px-8 overflow-x-auto no-scrollbar">
         <div className="brick-grid mx-auto" style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
           {bricks.map((brick, idx) => {
             if (brick.isGap) return <div key={brick.id} className="w-full aspect-square bg-slate-900/10 rounded-xl" />;
@@ -348,26 +350,26 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+      <div className="fixed bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-2 max-w-full">
         {turnPhase === 'CHOOSING_ACTION' && !isAnimating && (
-          <div className="flex flex-col items-center gap-4 pointer-events-auto">
-             <div className="flex items-center gap-4 bg-slate-900/90 p-2 rounded-2xl border border-slate-700 shadow-2xl backdrop-blur-xl animate-in zoom-in duration-300">
-                <div className={`flex items-center gap-2 px-6 py-4 rounded-xl font-black text-xl tabular-nums ${timeLeft <= 5 ? 'bg-rose-600 animate-pulse text-white' : 'bg-slate-800 text-indigo-400'}`}><Timer size={20} />{timeLeft}s</div>
-                <button onClick={(e) => { e.stopPropagation(); handleKeep(); }} className="px-16 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl transition-all transform active:scale-95 flex items-center gap-2 shadow-lg shadow-emerald-600/20"><CheckCircle size={20} /> KEEP POSITION</button>
+          <div className="flex flex-col items-center gap-2 md:gap-4 pointer-events-auto">
+             <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-slate-900/95 p-2 rounded-2xl border border-slate-700 shadow-2xl backdrop-blur-xl animate-in zoom-in duration-300">
+                <div className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-4 rounded-xl font-black text-base md:text-xl tabular-nums ${timeLeft <= 5 ? 'bg-rose-600 animate-pulse text-white' : 'bg-slate-800 text-indigo-400'}`}><Timer size={18} />{timeLeft}s</div>
+                <button onClick={(e) => { e.stopPropagation(); handleKeep(); }} className="px-8 md:px-16 py-2 md:py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm md:text-base rounded-xl transition-all transform active:scale-95 flex items-center gap-2 shadow-lg shadow-emerald-600/20"><CheckCircle size={18} /> KEEP</button>
              </div>
-             <div className="bg-indigo-600/90 px-6 py-2 rounded-full border border-indigo-400 flex items-center gap-2 shadow-xl animate-pulse">
-               <MousePointer2 size={16} className="text-white" /><p className="text-white font-black text-sm uppercase tracking-wider">Click an unflipped tile to swap</p>
+             <div className="bg-indigo-600/90 px-4 md:px-6 py-1 md:py-2 rounded-full border border-indigo-400 flex items-center gap-2 shadow-xl animate-pulse">
+               <MousePointer2 size={14} className="text-white" /><p className="text-white font-black text-xs md:text-sm uppercase tracking-wider">Tap unflipped to swap</p>
              </div>
           </div>
         )}
         {turnPhase === 'FIRST_FLIP' && !isAnimating && (
-          <div className="bg-slate-800/80 px-8 py-3 rounded-full border border-slate-600 text-slate-300 font-bold uppercase tracking-widest text-xs">
-            {players[currentPlayerIdx]?.name}'s Turn: Select a Brick
+          <div className="bg-slate-800/90 px-4 md:px-8 py-2 md:py-3 rounded-full border border-slate-600 text-slate-300 font-bold uppercase tracking-wider text-[10px] md:text-xs">
+            {players[currentPlayerIdx]?.name}'s Turn
           </div>
         )}
         {isAnimating && (
-          <div className="bg-white/10 backdrop-blur-sm px-6 py-2 rounded-full border border-white/20 text-white/50 text-xs font-bold tracking-widest uppercase">
-            Click to Skip Animation
+          <div className="bg-white/10 backdrop-blur-sm px-4 md:px-6 py-1 md:py-2 rounded-full border border-white/20 text-white/50 text-[10px] md:text-xs font-bold tracking-widest uppercase">
+            Tap to Skip
           </div>
         )}
       </div>
