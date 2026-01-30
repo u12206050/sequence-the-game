@@ -134,10 +134,10 @@ const App: React.FC = () => {
     if (isAnimating || gameStatus !== 'PLAYING') return;
     const brick = bricks[idx];
     if (brick.isGap) return;
+    setActiveScoringItem(null);
 
     if (turnPhase === 'FIRST_FLIP') {
       if (brick.isFlipped) return;
-      setActiveScoringItem(null);
       const newBricks = [...bricks];
       newBricks[idx] = { ...newBricks[idx], isFlipped: true };
       setBricks(newBricks);
