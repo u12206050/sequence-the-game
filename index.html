@@ -19,7 +19,12 @@
             grid-template-columns: repeat(14, minmax(0, 1fr));
             gap: 0.5rem;
             perspective: 1000px;
-            max-width: 1200px;
+        }
+        @media (min-width: 769px) {
+            .brick-grid {
+                max-width: 1200px;
+                min-width: 1000px;
+            }
         }
         @media (max-width: 768px) {
             .brick-grid {

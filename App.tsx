@@ -12,13 +12,16 @@ import ConfirmationModal from './components/ConfirmationModal';
 import { GitCompareArrows, CheckCircle, MousePointer2, HelpCircle, RotateCcw, Timer } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+// Helper function to get column count based on viewport width
+const getColsForViewport = () => window.innerWidth <= 768 ? 7 : 14;
+
 const App: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameStatus, setGameStatus] = useState<GameStatus>('LOBBY');
   const [round, setRound] = useState(1);
   const [bricks, setBricks] = useState<Brick[]>([]);
   const [rows, setRows] = useState(7);
-  const [cols, setCols] = useState<number>(14);
+  const [cols, setCols] = useState<number>(typeof window !== 'undefined' ? getColsForViewport() : 14);
   const [gameMode, setGameMode] = useState<GameMode>('BOARD');
   const [mapSeed, setMapSeed] = useState('');
   const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0);
@@ -39,19 +42,26 @@ const App: React.FC = () => {
 
   // Track window size for responsive grid columns
   useEffect(() => {
+    let timeoutId: number | undefined;
     const updateCols = () => {
-      const newCols = window.innerWidth <= 768 ? 7 : 14;
-      setCols(newCols);
-      // Recalculate rows based on column count to maintain grid structure
-      if (bricks.length > 0) {
-        const totalBricks = bricks.length;
-        const newRows = Math.ceil(totalBricks / newCols);
-        setRows(newRows);
-      }
+      // Debounce to avoid excessive updates during resize
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        const newCols = getColsForViewport();
+        setCols(newCols);
+        // Recalculate rows based on column count to maintain grid structure
+        if (bricks.length > 0) {
+          const newRows = Math.ceil(bricks.length / newCols);
+          setRows(newRows);
+        }
+      }, 100);
     };
     updateCols();
     window.addEventListener('resize', updateCols);
-    return () => window.removeEventListener('resize', updateCols);
+    return () => {
+      window.removeEventListener('resize', updateCols);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [bricks.length]);
 
   useEffect(() => {
@@ -102,7 +112,7 @@ const App: React.FC = () => {
     const { bricks: initialBricks, rows: gridRows } = generateInitialBricks(mode, seed + roundNum);
     
     // Calculate rows based on current viewport
-    const currentCols = window.innerWidth <= 768 ? 7 : 14;
+    const currentCols = getColsForViewport();
     const actualRows = Math.ceil(initialBricks.length / currentCols);
     
     setPlayers(updatedPlayers);
@@ -302,10 +312,7 @@ const App: React.FC = () => {
       </div>
 
       <div className="relative w-full overflow-x-auto p-8 pb-12 no-scrollbar">
-        <div className="brick-grid mx-auto" style={{ 
-          gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-          minWidth: cols === 14 ? '1000px' : 'auto'
-        }}>
+        <div className="brick-grid mx-auto" style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
           {bricks.map((brick, idx) => {
             if (brick.isGap) return <div key={brick.id} className="w-full aspect-square bg-slate-900/10 rounded-xl" />;
             
