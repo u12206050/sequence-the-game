@@ -20,9 +20,16 @@
             gap: 0.5rem;
             perspective: 1000px;
         }
-        @media (max-width: 1024px) {
+        @media (min-width: 769px) {
+            .brick-grid {
+                max-width: 1200px;
+                min-width: 1000px;
+            }
+        }
+        @media (max-width: 768px) {
             .brick-grid {
                 grid-template-columns: repeat(7, minmax(0, 1fr));
+                gap: 0.25rem;
             }
         }
         .perspective-1000 {

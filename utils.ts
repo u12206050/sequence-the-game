@@ -129,7 +129,7 @@ function isPrevInSequence(v1: number, v2: number): boolean {
   return v2 === v1 - 1;
 }
 
-export function calculateScores(bricks: Brick[], newIndices: number[], rows: number): ScoringResult {
+export function calculateScores(bricks: Brick[], newIndices: number[], rows: number, cols: number = GRID_COLS): ScoringResult {
   const results: ScoringResult = { pairs: [], twins: [], sequences: [], totalPoints: 0 };
   const pairKeys = new Set<string>();
   const twinKeys = new Set<string>();
@@ -138,7 +138,7 @@ export function calculateScores(bricks: Brick[], newIndices: number[], rows: num
     const brick = bricks[idx];
     if (!brick || brick.isGap || !brick.isFlipped) continue;
 
-    const neighbors = getNeighbors(idx, rows, GRID_COLS);
+    const neighbors = getNeighbors(idx, rows, cols);
     for (const nIdx of neighbors) {
       const neighbor = bricks[nIdx];
       if (neighbor && !neighbor.isGap && neighbor.isFlipped) {
@@ -167,8 +167,8 @@ export function calculateScores(bricks: Brick[], newIndices: number[], rows: num
     const startBrick = bricks[startIdx];
     if (!startBrick || startBrick.isGap || !startBrick.isFlipped) continue;
 
-    const upBranches = getMonotonePaths(bricks, startIdx, isNextInSequence, rows);
-    const downBranches = getMonotonePaths(bricks, startIdx, isPrevInSequence, rows);
+    const upBranches = getMonotonePaths(bricks, startIdx, isNextInSequence, rows, cols);
+    const downBranches = getMonotonePaths(bricks, startIdx, isPrevInSequence, rows, cols);
 
     for (const upPath of upBranches) {
       for (const downPath of downBranches) {
@@ -193,9 +193,10 @@ function getMonotonePaths(
   currIdx: number, 
   checkFn: (v1: number, v2: number) => boolean, 
   rows: number,
+  cols: number = GRID_COLS,
   visited: Set<number> = new Set()
 ): number[][] {
-  const neighbors = getNeighbors(currIdx, rows, GRID_COLS);
+  const neighbors = getNeighbors(currIdx, rows, cols);
   const currentVal = bricks[currIdx].value;
   const nextVisited = new Set(visited).add(currIdx);
   
@@ -207,7 +208,7 @@ function getMonotonePaths(
     const neighbor = bricks[nIdx];
     if (neighbor && !neighbor.isGap && neighbor.isFlipped && checkFn(currentVal, neighbor.value)) {
       foundAny = true;
-      const subPaths = getMonotonePaths(bricks, nIdx, checkFn, rows, nextVisited);
+      const subPaths = getMonotonePaths(bricks, nIdx, checkFn, rows, cols, nextVisited);
       for (const sub of subPaths) {
         branches.push([nIdx, ...sub]);
       }

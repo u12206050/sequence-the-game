@@ -12,12 +12,16 @@ import ConfirmationModal from './components/ConfirmationModal';
 import { GitCompareArrows, CheckCircle, MousePointer2, HelpCircle, RotateCcw, Timer } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+// Helper function to get column count based on viewport width
+const getColsForViewport = () => window.innerWidth <= 768 ? 7 : 14;
+
 const App: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameStatus, setGameStatus] = useState<GameStatus>('LOBBY');
   const [round, setRound] = useState(1);
   const [bricks, setBricks] = useState<Brick[]>([]);
   const [rows, setRows] = useState(7);
+  const [cols, setCols] = useState<number>(typeof window !== 'undefined' ? getColsForViewport() : 14);
   const [gameMode, setGameMode] = useState<GameMode>('BOARD');
   const [mapSeed, setMapSeed] = useState('');
   const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0);
@@ -35,6 +39,30 @@ const App: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [accumulatedTurnPoints, setAccumulatedTurnPoints] = useState(0);
   const skipRef = useRef(false);
+
+  // Track window size for responsive grid columns
+  useEffect(() => {
+    let timeoutId: number | undefined;
+    const updateCols = () => {
+      // Debounce to avoid excessive updates during resize
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        const newCols = getColsForViewport();
+        setCols(newCols);
+        // Recalculate rows based on column count to maintain grid structure
+        if (bricks.length > 0) {
+          const newRows = Math.ceil(bricks.length / newCols);
+          setRows(newRows);
+        }
+      }, 100);
+    };
+    updateCols();
+    window.addEventListener('resize', updateCols);
+    return () => {
+      window.removeEventListener('resize', updateCols);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [bricks.length]);
 
   useEffect(() => {
     if (turnPhase === 'CHOOSING_ACTION' && !isAnimating && gameStatus === 'PLAYING') {
@@ -83,9 +111,14 @@ const App: React.FC = () => {
 
     const { bricks: initialBricks, rows: gridRows } = generateInitialBricks(mode, seed + roundNum);
     
+    // Calculate rows based on current viewport
+    const currentCols = getColsForViewport();
+    const actualRows = Math.ceil(initialBricks.length / currentCols);
+    
     setPlayers(updatedPlayers);
     setBricks(initialBricks);
-    setRows(gridRows);
+    setRows(actualRows);
+    setCols(currentCols);
     setRound(roundNum);
     setCurrentPlayerIdx(startingPlayerIdx);
     setTurnPhase('FIRST_FLIP');
@@ -139,7 +172,7 @@ const App: React.FC = () => {
   const performScoring = async (bricksToScore: Brick[], newIndices: number[]) => {
     setIsAnimating(true);
     skipRef.current = false;
-    const result = calculateScores(bricksToScore, newIndices, rows);
+    const result = calculateScores(bricksToScore, newIndices, rows, cols);
     setLastScoring(result);
     setAccumulatedTurnPoints(0);
 
@@ -279,7 +312,7 @@ const App: React.FC = () => {
       </div>
 
       <div className="relative w-full overflow-x-auto p-8 pb-12 no-scrollbar">
-        <div className="brick-grid mx-auto min-w-[1000px] lg:min-w-0" style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
+        <div className="brick-grid mx-auto" style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
           {bricks.map((brick, idx) => {
             if (brick.isGap) return <div key={brick.id} className="w-full aspect-square bg-slate-900/10 rounded-xl" />;
             
