@@ -11,7 +11,7 @@ interface PlayerStatsProps {
 
 const PlayerStats: React.FC<PlayerStatsProps> = ({ player, isActive, isCurrentTurn }) => {
   return (
-    <div className={`flex flex-col items-center p-2 md:p-3 rounded-xl md:rounded-2xl transition-all duration-300 min-w-[100px] md:min-w-[130px] ${
+    <div className={`flex flex-col items-center p-1 sm:p-2 md:p-3 rounded-xl md:rounded-2xl transition-all duration-300 min-w-[100px] md:min-w-[130px] ${
       isActive ? 'bg-indigo-600/20 ring-2 ring-indigo-500/50 scale-105 shadow-lg' : 'bg-slate-900/40'
     }`}>
       <div className="w-full flex justify-between items-center mb-0.5 md:mb-1">
