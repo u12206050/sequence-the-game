@@ -281,7 +281,7 @@ const App: React.FC = () => {
       className="min-h-screen flex flex-col items-center max-w-7xl mx-auto select-none"
       onClick={handleScreenClick}
     >
-      <div className="sticky top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-b border-slate-700/50 shadow-xl">
+      <div className="sticky top-0 w-full z-50 bg-slate-900/95 backdrop-blur-lg border-b border-slate-700/50 shadow-xl">
         <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-4 p-2 md:p-4">
           <div className="flex items-center gap-2 md:gap-4 px-2 md:px-4">
             <div className="bg-indigo-600 p-2 md:p-3 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-500/20">
@@ -300,6 +300,7 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
+            <ScoreOverlay activeItem={activeScoringItem} totalAccumulated={accumulatedTurnPoints} isSkipped={skipRef.current} />
           </div>
           <div className="flex gap-2 md:gap-4 overflow-x-auto max-w-full px-2 md:px-4 py-1 no-scrollbar">
             {players.map((p, i) => (
@@ -309,11 +310,7 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="fixed top-[100px] md:top-[120px] left-0 right-0 h-16 md:h-24 flex items-center justify-center z-40 pointer-events-none">
-        <ScoreOverlay activeItem={activeScoringItem} totalAccumulated={accumulatedTurnPoints} isSkipped={skipRef.current} />
-      </div>
-
-      <div className="relative w-full pt-4 pb-8 px-2 md:px-8 overflow-x-auto no-scrollbar">
+      <div className="relative w-full pt-4 pb-16 px-2 md:px-8 overflow-x-auto no-scrollbar">
         <div className="brick-grid mx-auto" style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}>
           {bricks.map((brick, idx) => {
             if (brick.isGap) return <div key={brick.id} className="w-full aspect-square bg-slate-900/10 rounded-xl" />;
