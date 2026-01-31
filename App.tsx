@@ -171,6 +171,7 @@ const App: React.FC = () => {
     const brick = bricks[idx];
     if (brick.isGap) return;
     setActiveScoringItem(null);
+    setAccumulatedTurnPoints(0);
 
     if (turnPhase === 'FIRST_FLIP') {
       if (brick.isFlipped) return;
