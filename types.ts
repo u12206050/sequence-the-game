@@ -7,6 +7,8 @@ export interface Player {
   roundScore: number; // Reset every round
   roundWins: number;  // Rounds won in current game
   handicap: number;
+  isBot?: boolean;
+  botDifficulty?: 'easy' | 'medium' | 'hard';
 }
 
 export interface Brick {

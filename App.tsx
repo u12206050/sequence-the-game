@@ -5,12 +5,13 @@ import { generateInitialBricks, calculateScores, GRID_COLS } from './utils';
 import BrickComponent from './components/Brick';
 import PlayerStats from './components/PlayerStats';
 import ScoreOverlay from './components/ScoreOverlay';
-import Lobby from './components/Lobby';
+import Lobby, { PlayerConfig } from './components/Lobby';
 import RoundSummary from './components/RoundSummary';
 import HelpModal from './components/HelpModal';
 import ConfirmationModal from './components/ConfirmationModal';
-import { GitCompareArrows, CheckCircle, MousePointer2, HelpCircle, RotateCcw, Timer } from 'lucide-react';
+import { GitCompareArrows, CheckCircle, MousePointer2, HelpCircle, RotateCcw, Timer, Bot } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { getBotMove } from './ai-bot';
 
 // Helper function to get column count based on viewport width
 const getColsForViewport = () => window.innerWidth <= 768 ? 7 : 14;
@@ -88,13 +89,45 @@ const App: React.FC = () => {
     };
   }, [turnPhase, isAnimating, gameStatus]);
 
-  const startGame = (names: string[], mode: GameMode, seed: string) => {
-    const initialPlayers: Player[] = names.map((name) => ({
+  // Bot AI turn handler
+  useEffect(() => {
+    if (gameStatus !== 'PLAYING' || isAnimating) return;
+    
+    const currentPlayer = players[currentPlayerIdx];
+    if (!currentPlayer?.isBot) return;
+
+    // Add a delay to make bot moves more visible and natural
+    const delay = turnPhase === 'FIRST_FLIP' ? 1000 : 500;
+    
+    const timer = setTimeout(() => {
+      if (turnPhase === 'FIRST_FLIP') {
+        // Bot needs to flip a brick
+        const botMove = getBotMove(bricks, rows, cols, currentPlayer.botDifficulty || 'medium');
+        handleBrickClick(botMove.firstIdx);
+      } else if (turnPhase === 'CHOOSING_ACTION') {
+        // Bot needs to decide: keep or swap
+        const botMove = getBotMove(bricks, rows, cols, currentPlayer.botDifficulty || 'medium');
+        
+        if (botMove.type === 'keep') {
+          handleKeep();
+        } else if (botMove.type === 'swap' && botMove.secondIdx !== undefined) {
+          handleSwap(botMove.secondIdx);
+        }
+      }
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [turnPhase, currentPlayerIdx, players, gameStatus, isAnimating, bricks, rows, cols]);
+
+  const startGame = (playerConfigs: PlayerConfig[], mode: GameMode, seed: string) => {
+    const initialPlayers: Player[] = playerConfigs.map((config) => ({
       id: Math.random().toString(36).substr(2, 9),
-      name,
+      name: config.name,
       roundScore: 0,
       roundWins: 0,
       handicap: 0,
+      isBot: config.isBot,
+      botDifficulty: config.botDifficulty,
     }));
     setGameMode(mode);
     setMapSeed(seed || Math.random().toString(36).substring(7));
@@ -349,7 +382,7 @@ const App: React.FC = () => {
       </div>
 
       <div className="fixed bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-2 max-w-full">
-        {turnPhase === 'CHOOSING_ACTION' && !isAnimating && (
+        {turnPhase === 'CHOOSING_ACTION' && !isAnimating && !players[currentPlayerIdx]?.isBot && (
           <div className="flex flex-col items-center gap-2 md:gap-4 pointer-events-auto">
              <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-slate-900/95 p-2 rounded-2xl border border-slate-700 shadow-2xl backdrop-blur-xl animate-in zoom-in duration-300">
                 <div className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-4 rounded-xl font-black text-base md:text-xl tabular-nums ${timeLeft <= 5 ? 'bg-rose-600 animate-pulse text-white' : 'bg-slate-800 text-indigo-400'}`}><Timer size={18} />{timeLeft}s</div>
@@ -360,8 +393,14 @@ const App: React.FC = () => {
              </div>
           </div>
         )}
-        {turnPhase === 'FIRST_FLIP' && !isAnimating && (
-          <div className="bg-slate-800/90 px-4 md:px-8 py-2 md:py-3 rounded-full border border-slate-600 text-slate-300 font-bold uppercase tracking-wider text-[10px] md:text-xs">
+        {(turnPhase === 'FIRST_FLIP' || turnPhase === 'CHOOSING_ACTION') && !isAnimating && players[currentPlayerIdx]?.isBot && (
+          <div className="bg-indigo-600/90 px-4 md:px-8 py-2 md:py-3 rounded-full border border-indigo-400 text-white font-bold uppercase tracking-wider text-[10px] md:text-xs flex items-center gap-2 animate-pulse">
+            <Bot size={14} />
+            {players[currentPlayerIdx]?.name} is thinking...
+          </div>
+        )}
+        {turnPhase === 'FIRST_FLIP' && !isAnimating && !players[currentPlayerIdx]?.isBot && (
+          <div className="bg-slate-800/90 px-4 md:px-8 py-2 md:py-3 rounded-full border border-slate-600 text-slate-300 font-bold uppercase tracking-wider text-[10px] md:text-xs flex items-center gap-2">
             {players[currentPlayerIdx]?.name}'s Turn
           </div>
         )}
