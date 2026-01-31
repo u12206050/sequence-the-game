@@ -385,7 +385,8 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-2 max-w-full">
+      <div className="sticky w-full bottom-4 md:bottom-10">
+      <div className="left-1/2 -translate-x-1/2 z-50 pointer-events-none px-2 max-w-full">
         {turnPhase === 'CHOOSING_ACTION' && !isAnimating && !players[currentPlayerIdx]?.isBot && (
           <div className="flex flex-col items-center gap-2 md:gap-4 pointer-events-auto">
              <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 bg-slate-900/95 p-2 rounded-2xl border border-slate-700 shadow-2xl backdrop-blur-xl animate-in zoom-in duration-300">
@@ -413,6 +414,7 @@ const App: React.FC = () => {
             Tap to Skip
           </div>
         )}
+      </div>
       </div>
 
       {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
