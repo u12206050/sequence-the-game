@@ -10,7 +10,7 @@ interface LobbyProps {
 const Lobby: React.FC<LobbyProps> = ({ onStart }) => {
   const [names, setNames] = useState(['Player 1', 'Player 2']);
   const [mode, setMode] = useState<GameMode>('BOARD');
-  const [seed, setSeed] = useState('');
+  const [seed, setSeed] = useState(String(Date.now()));
 
   const addPlayer = () => {
     if (names.length < 4) {
