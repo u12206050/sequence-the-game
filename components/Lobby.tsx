@@ -1,33 +1,51 @@
 
 import React, { useState } from 'react';
-import { UserPlus, GitCompareArrows, Info, Map as MapIcon, Grid3X3, Dna } from 'lucide-react';
+import { UserPlus, GitCompareArrows, Info, Map as MapIcon, Grid3X3, Dna, Bot } from 'lucide-react';
 import { GameMode } from '../types';
 
+export interface PlayerConfig {
+  name: string;
+  isBot: boolean;
+  botDifficulty?: 'easy' | 'medium' | 'hard';
+}
+
 interface LobbyProps {
-  onStart: (names: string[], mode: GameMode, seed: string) => void;
+  onStart: (playerConfigs: PlayerConfig[], mode: GameMode, seed: string) => void;
 }
 
 const Lobby: React.FC<LobbyProps> = ({ onStart }) => {
-  const [names, setNames] = useState(['Player 1', 'Player 2']);
+  const [players, setPlayers] = useState<PlayerConfig[]>([
+    { name: 'Player 1', isBot: false },
+    { name: 'Player 2', isBot: false },
+  ]);
   const [mode, setMode] = useState<GameMode>('BOARD');
   const [seed, setSeed] = useState(String(Date.now()));
 
   const addPlayer = () => {
-    if (names.length < 4) {
-      setNames([...names, `Player ${names.length + 1}`]);
+    if (players.length < 4) {
+      setPlayers([...players, { name: `Player ${players.length + 1}`, isBot: false }]);
     }
   };
 
   const removePlayer = (idx: number) => {
-    if (names.length > 2) {
-      setNames(names.filter((_, i) => i !== idx));
+    if (players.length > 2) {
+      setPlayers(players.filter((_, i) => i !== idx));
     }
   };
 
-  const updateName = (idx: number, name: string) => {
-    const newNames = [...names];
-    newNames[idx] = name;
-    setNames(newNames);
+  const updatePlayer = (idx: number, updates: Partial<PlayerConfig>) => {
+    const newPlayers = [...players];
+    newPlayers[idx] = { ...newPlayers[idx], ...updates };
+    setPlayers(newPlayers);
+  };
+
+  const toggleBot = (idx: number) => {
+    const player = players[idx];
+    updatePlayer(idx, {
+      isBot: !player.isBot,
+      name: !player.isBot ? 'Bot' : `Player ${idx + 1}`,
+      botDifficulty: !player.isBot ? 'medium' : undefined,
+    });
   };
 
   return (
@@ -76,21 +94,58 @@ const Lobby: React.FC<LobbyProps> = ({ onStart }) => {
           <div>
             <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">Players</label>
             <div className="space-y-3">
-              {names.map((name, i) => (
-                <div key={i} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => updateName(i, e.target.value)}
-                    className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                    placeholder={`Player ${i + 1}`}
-                  />
-                  {names.length > 2 && (
-                    <button onClick={() => removePlayer(i)} className="bg-slate-800 text-rose-400 p-3 rounded-xl hover:bg-rose-500/10 transition-colors">&times;</button>
+              {players.map((player, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex gap-2">
+                    {player.isBot ? (
+                      <div className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 flex items-center gap-2">
+                        <Bot size={18} className="text-indigo-400" />
+                        <span className="font-bold">{player.name}</span>
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={player.name}
+                        onChange={(e) => updatePlayer(i, { name: e.target.value })}
+                        className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+                        placeholder={`Player ${i + 1}`}
+                      />
+                    )}
+                    <button
+                      onClick={() => toggleBot(i)}
+                      className={`p-3 rounded-xl transition-colors ${
+                        player.isBot
+                          ? 'bg-indigo-600 text-white hover:bg-indigo-500'
+                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      }`}
+                      title={player.isBot ? 'Switch to Human' : 'Switch to Bot'}
+                    >
+                      <Bot size={20} />
+                    </button>
+                    {players.length > 2 && (
+                      <button onClick={() => removePlayer(i)} className="bg-slate-800 text-rose-400 p-3 rounded-xl hover:bg-rose-500/10 transition-colors">&times;</button>
+                    )}
+                  </div>
+                  {player.isBot && (
+                    <div className="flex gap-2 pl-2">
+                      {(['easy', 'medium', 'hard'] as const).map((diff) => (
+                        <button
+                          key={diff}
+                          onClick={() => updatePlayer(i, { botDifficulty: diff })}
+                          className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold uppercase transition-all ${
+                            player.botDifficulty === diff
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
+                          }`}
+                        >
+                          {diff}
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}
-              {names.length < 4 && (
+              {players.length < 4 && (
                 <button onClick={addPlayer} className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-slate-700 text-slate-400 rounded-xl hover:bg-slate-800 transition-colors">
                   <UserPlus size={20} /> Add Player
                 </button>
@@ -114,7 +169,7 @@ const Lobby: React.FC<LobbyProps> = ({ onStart }) => {
         </div>
 
         <button
-          onClick={() => onStart(names, mode, seed)}
+          onClick={() => onStart(players, mode, seed)}
           className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xl rounded-2xl shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
         >
           Start Game

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Player } from '../types';
-import { Award } from 'lucide-react';
+import { Award, Bot } from 'lucide-react';
 
 interface PlayerStatsProps {
   player: Player;
@@ -26,7 +26,8 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({ player, isActive, isCurrentTu
           </div>
         )}
       </div>
-      <span className="text-sm md:text-lg font-bold text-white mb-0.5 md:mb-1 truncate max-w-[85px] md:max-w-[110px]">
+      <span className="text-sm md:text-lg font-bold text-white mb-0.5 md:mb-1 truncate max-w-[85px] md:max-w-[110px] flex items-center gap-1">
+        {player.isBot && <Bot size={14} className="text-indigo-400 shrink-0" />}
         {player.name}
       </span>
       <div className="flex flex-col items-center">
