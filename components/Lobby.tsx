@@ -16,7 +16,7 @@ interface LobbyProps {
 const Lobby: React.FC<LobbyProps> = ({ onStart }) => {
   const [players, setPlayers] = useState<PlayerConfig[]>([
     { name: 'Player 1', isBot: false },
-    { name: 'Bot', isBot: true, botDifficulty: 'medium' },
+    { name: 'Player 2', isBot: false },
   ]);
   const [mode, setMode] = useState<GameMode>('BOARD');
   const [seed, setSeed] = useState(String(Date.now()));

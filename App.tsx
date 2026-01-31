@@ -40,6 +40,7 @@ const App: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [accumulatedTurnPoints, setAccumulatedTurnPoints] = useState(0);
   const skipRef = useRef(false);
+  const botMoveRef = useRef<{ type: 'keep' | 'swap'; firstIdx: number; secondIdx?: number } | null>(null);
 
   // Track window size for responsive grid columns
   useEffect(() => {
@@ -94,30 +95,31 @@ const App: React.FC = () => {
     if (gameStatus !== 'PLAYING' || isAnimating) return;
     
     const currentPlayer = players[currentPlayerIdx];
-    if (!currentPlayer?.isBot) return;
+    if (!currentPlayer?.isBot) {
+      botMoveRef.current = null;
+      return;
+    }
 
     // Add a delay to make bot moves more visible and natural
     const delay = turnPhase === 'FIRST_FLIP' ? 1000 : 500;
     
     const timer = setTimeout(() => {
       if (turnPhase === 'FIRST_FLIP') {
-        // Bot needs to flip a brick
-        const botMove = getBotMove(bricks, rows, cols, currentPlayer.botDifficulty || 'medium');
-        handleBrickClick(botMove.firstIdx);
-      } else if (turnPhase === 'CHOOSING_ACTION') {
-        // Bot needs to decide: keep or swap
-        const botMove = getBotMove(bricks, rows, cols, currentPlayer.botDifficulty || 'medium');
-        
-        if (botMove.type === 'keep') {
+        // Calculate bot move once and store it
+        botMoveRef.current = getBotMove(bricks, rows, cols, currentPlayer.botDifficulty || 'medium');
+        handleBrickClick(botMoveRef.current.firstIdx);
+      } else if (turnPhase === 'CHOOSING_ACTION' && botMoveRef.current) {
+        // Reuse the previously calculated move
+        if (botMoveRef.current.type === 'keep') {
           handleKeep();
-        } else if (botMove.type === 'swap' && botMove.secondIdx !== undefined) {
-          handleSwap(botMove.secondIdx);
+        } else if (botMoveRef.current.type === 'swap' && botMoveRef.current.secondIdx !== undefined) {
+          handleSwap(botMoveRef.current.secondIdx);
         }
       }
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [turnPhase, currentPlayerIdx, players, gameStatus, isAnimating, bricks, rows, cols]);
+  }, [turnPhase, currentPlayerIdx, players, gameStatus, isAnimating]);
 
   const startGame = (playerConfigs: PlayerConfig[], mode: GameMode, seed: string) => {
     const initialPlayers: Player[] = playerConfigs.map((config) => ({
@@ -161,6 +163,7 @@ const App: React.FC = () => {
     setActiveScoringItem(null);
     setAccumulatedTurnPoints(0);
     setTimeLeft(20);
+    botMoveRef.current = null;
   };
 
   const handleBrickClick = (idx: number) => {
@@ -305,6 +308,7 @@ const App: React.FC = () => {
     setIsTieBreaker(false);
     setAccumulatedTurnPoints(0);
     setIsConfirmOpen(false);
+    botMoveRef.current = null;
     if (timerRef.current) clearInterval(timerRef.current);
   };
 

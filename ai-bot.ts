@@ -43,7 +43,7 @@ export function getBotMove(
     const keepBricks = [...bricks];
     keepBricks[firstIdx] = { ...keepBricks[firstIdx], isFlipped: true };
     const keepScore = calculateScores(keepBricks, [firstIdx], rows, cols);
-    const keepEvaluation = evaluatePosition(keepBricks, keepScore, difficulty);
+    const keepEvaluation = evaluatePosition(keepBricks, keepScore, difficulty, rows, cols);
     
     moveOptions.push({
       type: 'keep',
@@ -62,7 +62,7 @@ export function getBotMove(
       swapBricks[secondIdx] = { ...swapBricks[secondIdx], value: temp, isFlipped: true };
       
       const swapScore = calculateScores(swapBricks, [firstIdx, secondIdx], rows, cols);
-      const swapEvaluation = evaluatePosition(swapBricks, swapScore, difficulty);
+      const swapEvaluation = evaluatePosition(swapBricks, swapScore, difficulty, rows, cols);
 
       moveOptions.push({
         type: 'swap',
@@ -189,7 +189,9 @@ function getEasyMove(
 function evaluatePosition(
   bricks: Brick[],
   scoringResult: ScoringResult,
-  difficulty: BotDifficulty
+  difficulty: BotDifficulty,
+  rows: number,
+  cols: number = GRID_COLS
 ): number {
   let evaluation = scoringResult.totalPoints * 10; // Base score from immediate points
 
@@ -211,15 +213,15 @@ function evaluatePosition(
   // Look for adjacent flipped bricks that could form scoring patterns
   for (const idx of flippedIndices) {
     const brick = bricks[idx];
-    const row = Math.floor(idx / GRID_COLS);
-    const col = idx % GRID_COLS;
+    const row = Math.floor(idx / cols);
+    const col = idx % cols;
 
     // Check neighbors
     const neighbors = [];
-    if (row > 0) neighbors.push(idx - GRID_COLS);
-    if (row < Math.ceil(bricks.length / GRID_COLS) - 1) neighbors.push(idx + GRID_COLS);
+    if (row > 0) neighbors.push(idx - cols);
+    if (row < rows - 1) neighbors.push(idx + cols);
     if (col > 0) neighbors.push(idx - 1);
-    if (col < GRID_COLS - 1) neighbors.push(idx + 1);
+    if (col < cols - 1) neighbors.push(idx + 1);
 
     for (const nIdx of neighbors) {
       const neighbor = bricks[nIdx];
